@@ -1,19 +1,37 @@
 <template>
   <div class="app">
     <div v-if="rounds === 0" class="round-selection">
-      <h2>Selecciona el numero de rondas:</h2>
+      <img src="https://i.pinimg.com/originals/8d/66/d9/8d66d96a9893ee18763d913767db869f.png" alt="Seleccionar Rondas" class="header-image" />
+      <h2>Selecciona el número de rondas:</h2>
       <button @click="selectRounds(3)">3 Rondas</button>
       <button @click="selectRounds(5)">5 Rondas</button>
       <button @click="selectRounds(7)">7 Rondas</button>
+
+      <h2>Selecciona el modo de combate:</h2>
+      <select v-model="selectedMode">
+        <option value="attack">Ataque</option>
+        <option value="defense">Defensa</option>
+        <option value="speed">Velocidad</option>
+      </select>
     </div>
 
-    <div v-if="rounds > 0" class="battle">
+    <div v-if="rounds > 0 && !gameOver" class="battle">
       <h2>Ronda {{ currentRound }}</h2>
+
+      <div class="scoreboard">
+        <p>Equipo 1 - Victorias: {{ team1Wins }}</p>
+        <p>Equipo 2 - Victorias: {{ team2Wins }}</p>
+      </div>
 
       <div class="team">
         <h3>Equipo 1</h3>
         <ul class="pokemon-cards">
-          <li v-for="(pokemon, index) in team1" :key="pokemon.name" class="pokemon-card">
+          <li
+            v-for="(pokemon, index) in team1"
+            :key="pokemon.name"
+            :class="{'selected-pokemon': selectedPokemon1 === pokemon}" 
+            class="pokemon-card"
+          >
             <img :src="pokemon.image" :alt="pokemon.name" class="pokemon-image" />
             <button class="select-btn" @click="selectPokemon(1, index)">
               {{ pokemon.name }} (Stats: {{ pokemonStats(pokemon) }})
@@ -25,7 +43,12 @@
       <div class="team">
         <h3>Equipo 2</h3>
         <ul class="pokemon-cards">
-          <li v-for="(pokemon, index) in team2" :key="pokemon.name" class="pokemon-card">
+          <li
+            v-for="(pokemon, index) in team2"
+            :key="pokemon.name"
+            :class="{'selected-pokemon': selectedPokemon2 === pokemon}" 
+            class="pokemon-card"
+          >
             <img :src="pokemon.image" :alt="pokemon.name" class="pokemon-image" />
             <button class="select-btn" @click="selectPokemon(2, index)">
               {{ pokemon.name }} (Stats: {{ pokemonStats(pokemon) }})
@@ -42,15 +65,17 @@
       </div>
     </div>
 
-    <div v-if="winner !== null" class="results">
-      <h2>Ganador: Equipo {{ winner }}</h2>
+    <div v-if="winner !== null && !gameOver" class="results">
+      <h2>Ganador de la ronda: Equipo {{ winner }}</h2>
       <button @click="nextRound">Siguiente Ronda</button>
     </div>
 
     <div v-if="gameOver" class="game-over">
-      <h2>Fin de la batalla! Puntuacion Final:</h2>
+      <h2>¡Fin de la batalla! El ganador es el Equipo {{ finalWinner }}.</h2>
+      <p>Puntuación Final:</p>
       <p>Equipo 1: {{ team1Wins }} Victorias</p>
       <p>Equipo 2: {{ team2Wins }} Victorias</p>
+      <button @click="startNewGame" class="new-game-btn">Nueva Batalla</button>
     </div>
   </div>
 </template>
@@ -71,6 +96,8 @@ export default {
     const selectedPokemon2 = ref(null);
     const winner = ref(null);
     const gameOver = ref(false);
+    const finalWinner = ref(null);
+    const selectedMode = ref("attack");
 
     const fetchPokemon = async () => {
       const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
@@ -108,7 +135,16 @@ export default {
     };
 
     const pokemonStats = (pokemon) => {
-      return pokemon.stats.reduce((total, stat) => total + stat.base_stat, 0);
+      switch (selectedMode.value) {
+        case "attack":
+          return pokemon.stats[1].base_stat; 
+        case "defense":
+          return pokemon.stats[2].base_stat; 
+        case "speed":
+          return pokemon.stats[5].base_stat; 
+        default:
+          return 0;
+      }
     };
 
     const selectPokemon = (team, index) => {
@@ -130,6 +166,14 @@ export default {
         team2Wins.value++;
         winner.value = 2;
       }
+
+      if (team1Wins.value >= Math.ceil(rounds.value / 2)) {
+        gameOver.value = true;
+        finalWinner.value = 1;
+      } else if (team2Wins.value >= Math.ceil(rounds.value / 2)) {
+        gameOver.value = true;
+        finalWinner.value = 2;
+      }
     };
 
     const nextRound = () => {
@@ -138,11 +182,20 @@ export default {
       selectedPokemon2.value = null;
       currentRound.value++;
 
-      if (currentRound.value > rounds.value) {
-        gameOver.value = true;
-      } else {
+      if (!gameOver.value) {
         createTeams();
       }
+    };
+
+    const startNewGame = () => {
+      rounds.value = 0;
+      currentRound.value = 1;
+      team1Wins.value = 0;
+      team2Wins.value = 0;
+      winner.value = null;
+      gameOver.value = false;
+      finalWinner.value = null;
+      selectedMode.value = "attack"; 
     };
 
     onMounted(() => {
@@ -160,23 +213,36 @@ export default {
       selectedPokemon2,
       winner,
       gameOver,
+      finalWinner,
+      selectedMode,
       selectRounds,
       selectPokemon,
       nextRound,
       pokemonStats,
       battle,
+      startNewGame,
     };
   },
 };
 </script>
 
 <style>
+
 .app {
   text-align: center;
+  background-size: cover;
+  background-position: center;
+  color: white;
 }
 
 .round-selection {
   margin-top: 80px;
+}
+
+.header-image {
+  width: 200px;
+  height: auto;
+  margin-bottom: 20px;
 }
 
 .round-selection button {
@@ -192,35 +258,20 @@ export default {
 }
 
 .round-selection button:hover {
-  background-color: #1abc9c;
-}
-
-.team {
-  display: inline-block;
-  margin: 20px;
-}
-
-.pokemon-cards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
+  background-color: #36b39e;
 }
 
 .pokemon-card {
+  display: inline-block;
   margin: 10px;
-  padding: 15px;
-  width: 150px;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.3s ease;
+  border: 2px solid #2980b9;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
 }
 
 .pokemon-card:hover {
-  transform: translateY(-5px);
+  transform: scale(1.05);
 }
 
 .pokemon-image {
@@ -229,23 +280,23 @@ export default {
 }
 
 .select-btn {
-  margin-top: 10px;
+  margin: 5px;
   padding: 5px 10px;
   font-size: 14px;
-  background-color: #2e86de;
+  background-color: #3498db;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 5px;
   transition: background-color 0.3s ease;
 }
 
 .select-btn:hover {
-  background-color: #1e60ac;
+  background-color: #2980b9;
 }
 
-.results, .game-over {
-  margin-top: 20px;
+.selected-pokemon {
+  border: 2px solid #2ecc71;
 }
 
 .battle-result {
@@ -256,7 +307,7 @@ export default {
   margin-top: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #e74c3c;
+  background-color: #e67e22;
   color: white;
   border: none;
   cursor: pointer;
@@ -265,6 +316,29 @@ export default {
 }
 
 .battle-btn:hover {
+  background-color: #d35400;
+}
+
+.results {
+  margin-top: 20px;
+}
+
+.game-over {
+  margin-top: 20px;
+}
+
+.new-game-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.new-game-btn:hover {
   background-color: #c0392b;
 }
 </style>
