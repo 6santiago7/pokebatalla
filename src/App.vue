@@ -9,9 +9,9 @@
 
       <h2>Selecciona el modo de combate:</h2>
       <select v-model="selectedMode">
-        <option value="attack">Ataque</option>
-        <option value="defense">Defensa</option>
-        <option value="speed">Velocidad</option>
+        <option value="Ataque">Ataque</option>
+        <option value="Defensa">Defensa</option>
+        <option value="Velocidad">Velocidad</option>
       </select>
     </div>
 
@@ -22,6 +22,8 @@
         <p>Equipo 1 - Victorias: {{ team1Wins }}</p>
         <p>Equipo 2 - Victorias: {{ team2Wins }}</p>
       </div>
+
+      <p class="selected-statistic">Esta batalla está siendo evaluada bajo la estadística de: {{ selectedMode }}</p>
 
       <div class="team">
         <h3>Equipo 1</h3>
@@ -34,7 +36,7 @@
           >
             <img :src="pokemon.image" :alt="pokemon.name" class="pokemon-image" />
             <button class="select-btn" @click="selectPokemon(1, index)">
-              {{ pokemon.name }} (Stats: {{ pokemonStats(pokemon) }})
+              {{ pokemon.name }}
             </button>
           </li>
         </ul>
@@ -51,7 +53,7 @@
           >
             <img :src="pokemon.image" :alt="pokemon.name" class="pokemon-image" />
             <button class="select-btn" @click="selectPokemon(2, index)">
-              {{ pokemon.name }} (Stats: {{ pokemonStats(pokemon) }})
+              {{ pokemon.name }}
             </button>
           </li>
         </ul>
@@ -97,7 +99,7 @@ export default {
     const winner = ref(null);
     const gameOver = ref(false);
     const finalWinner = ref(null);
-    const selectedMode = ref("attack");
+    const selectedMode = ref("Ataque");
 
     const fetchPokemon = async () => {
       const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
@@ -136,11 +138,11 @@ export default {
 
     const pokemonStats = (pokemon) => {
       switch (selectedMode.value) {
-        case "attack":
+        case "Ataque":
           return pokemon.stats[1].base_stat; 
-        case "defense":
+        case "Defensa":
           return pokemon.stats[2].base_stat; 
-        case "speed":
+        case "Velocidad":
           return pokemon.stats[5].base_stat; 
         default:
           return 0;
@@ -195,7 +197,7 @@ export default {
       winner.value = null;
       gameOver.value = false;
       finalWinner.value = null;
-      selectedMode.value = "attack"; 
+      selectedMode.value = "Ataque"; 
     };
 
     onMounted(() => {
@@ -227,7 +229,6 @@ export default {
 </script>
 
 <style>
-
 .app {
   text-align: center;
   background-size: cover;
@@ -287,47 +288,14 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+  border-radius: 8px;
 }
 
 .select-btn:hover {
   background-color: #2980b9;
 }
 
-.selected-pokemon {
-  border: 2px solid #2ecc71;
-}
-
-.battle-result {
-  margin-top: 20px;
-}
-
 .battle-btn {
-  margin-top: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #e67e22;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-
-.battle-btn:hover {
-  background-color: #d35400;
-}
-
-.results {
-  margin-top: 20px;
-}
-
-.game-over {
-  margin-top: 20px;
-}
-
-.new-game-btn {
   padding: 10px 20px;
   font-size: 16px;
   background-color: #e74c3c;
@@ -338,7 +306,37 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.new-game-btn:hover {
+.battle-btn:hover {
   background-color: #c0392b;
+}
+
+.results,
+.game-over {
+  margin-top: 20px;
+}
+
+.new-game-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.new-game-btn:hover {
+  background-color: #27ae60;
+}
+
+.selected-pokemon {
+  border: 3px solid #f39c12;
+}
+
+.selected-statistic {
+  font-size: 16px;
+  margin: 10px 0;
+  color: #f39c12;
 }
 </style>
