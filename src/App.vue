@@ -69,7 +69,7 @@
 
     <div v-if="winner !== null && !gameOver" class="results">
       <h2>Ganador de la ronda: Equipo {{ winner }}</h2>
-      <button @click="nextRound">Siguiente Ronda</button>
+      <button @click="nextRound" class="next-round-btn">Siguiente Ronda</button>
     </div>
 
     <div v-if="gameOver" class="game-over">
@@ -229,6 +229,11 @@ export default {
 </script>
 
 <style>
+body {
+  background-color: black;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
 .app {
   text-align: center;
   background-size: cover;
@@ -272,27 +277,30 @@ export default {
 }
 
 .pokemon-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
+}
+
+.selected-pokemon {
+  border-color: #f1c40f;
 }
 
 .pokemon-image {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: auto;
 }
 
 .select-btn {
-  margin: 5px;
   padding: 5px 10px;
   font-size: 14px;
-  background-color: #3498db;
+  background-color: #2980b9;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 5px
 }
 
 .select-btn:hover {
-  background-color: #2980b9;
+  background-color: #1a5d80;
 }
 
 .battle-btn {
@@ -310,28 +318,34 @@ export default {
   background-color: #c0392b;
 }
 
-.results,
-.game-over {
-  margin-top: 20px;
-}
-
-.new-game-btn {
-  margin-top: 20px;
+.next-round-btn {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #2ecc71;
+  background-color: #2c3e50;
   color: white;
   border: none;
   cursor: pointer;
   border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.next-round-btn:hover {
+  background-color: #1a242f;
+}
+
+.new-game-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
 }
 
 .new-game-btn:hover {
-  background-color: #27ae60;
-}
-
-.selected-pokemon {
-  border: 3px solid #f39c12;
+  background-color: #1e8449;
 }
 
 .selected-statistic {
@@ -339,4 +353,5 @@ export default {
   margin: 10px 0;
   color: #f39c12;
 }
+
 </style>
